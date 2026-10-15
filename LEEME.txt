@@ -1,0 +1,46 @@
+LECTOR NOCTURNO - cómo publicarlo
+
+Esta carpeta es la app completa. Solo hay que subirla a un sitio web gratuito.
+Importante: sube el CONTENIDO de la carpeta (index.html, sw.js, manifest.webmanifest,
+los iconos y la carpeta "fonts" con los tipos de letra), todo junto y en la misma raíz
+del sitio.
+
+OPCIÓN A - Netlify (la más simple, desde un computador)
+1. Crea una cuenta gratis en netlify.com.
+2. Dentro de tu cuenta busca "Add new site" y elige "Deploy manually"
+   (los nombres de los botones pueden cambiar un poco).
+3. Descomprime este zip y arrastra la carpeta "lector-web" a la zona de carga.
+4. Netlify te da una dirección web. Esa es tu app.
+
+OPCIÓN B - GitHub Pages
+1. Crea una cuenta gratis en github.com y un repositorio nuevo, público.
+2. Sube todos los archivos de esta carpeta con "Add file" > "Upload files".
+3. En Settings > Pages, elige la rama "main" y la carpeta "/ (root)".
+4. Tu app queda en https://TU-USUARIO.github.io/NOMBRE-DEL-REPOSITORIO/
+
+CÓMO INSTALARLA EN ANDROID
+1. Abre la dirección en Chrome, con internet. Espera unos segundos a que cargue.
+2. Menú de Chrome (tres puntos) > "Instalar app" o "Añadir a la pantalla de inicio".
+3. Desde ese momento se abre como una app más y funciona sin internet.
+
+NOTAS
+- La primera vez hay que abrirla con internet: así el teléfono guarda las librerías
+  de PDF y EPUB. Después ya no hace falta conexión.
+- Tus libros y la página donde vas se guardan solo en el navegador de tu teléfono.
+- Si cambias algo en index.html, cambia también VERSION en sw.js (por ejemplo de
+  "v1" a "v2") para que los teléfonos descarguen la versión nueva.
+
+TIPOS DE LETRA
+- El botón "Aa" de la barra superior cambia la letra de los libros EPUB: la del libro,
+  Roboto, OpenDyslexic o Comic Sans. En un PDF no se puede cambiar la letra.
+- Comic Sans MS es de Microsoft y su licencia no permite redistribuirla en un sitio
+  público (ver fonts/LICENCIAS.txt). Para uso personal no hay problema; si compartes la
+  dirección con más gente, quita esa letra.
+
+PDF COMO TEXTO
+- Con un PDF abierto, el botón "Aa" tiene la opción "Leer este PDF como texto". Saca el
+  texto del PDF y lo muestra como un libro normal: se puede cambiar la letra, el tamaño y
+  usar la lectura en cascada. Se pierden las imágenes y el diseño de cada página.
+- Un PDF escaneado (hecho de fotos) no tiene texto y no se puede convertir.
+- El texto convertido se guarda en el teléfono, así que la segunda vez abre al instante.
+  Se puede volver a las páginas originales apagando la misma opción.

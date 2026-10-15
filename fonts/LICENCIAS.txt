@@ -1,0 +1,27 @@
+Tipos de letra incluidos en Lector Nocturno
+(versiones reducidas a caracteres latinos y convertidas a .woff)
+
+ROBOTO
+  Roboto, de Google. Licencia Apache 2.0.
+  Del paquete original: "You may use the materials in this file without restriction
+  to develop your apps and to use in your apps."
+
+OPENDYSLEXIC
+  OpenDyslexic, de Abelardo Gonzalez. Basada en Bitstream Vera Sans.
+  Copyright (c) 2003 by Bitstream, Inc. All Rights Reserved. Bitstream Vera is a
+  trademark of Bitstream, Inc.
+  Permission is hereby granted, free of charge, to any person obtaining a copy of the
+  fonts accompanying this license ("Fonts") and associated documentation files (the
+  "Font Software"), to reproduce and distribute the Font Software, including without
+  limitation the rights to use, copy, merge, publish, distribute, and/or sell copies of
+  the Font Software, and to permit persons to whom the Font Software is furnished to do
+  so, subject to the following conditions: the above copyright and trademark notices and
+  this permission notice shall be included in all copies of one or more of the Font
+  Software typefaces. The Font Software may be modified only if the fonts are renamed to
+  names not containing either the words "Bitstream" or the word "Vera".
+
+COMIC SANS MS
+  Tipo de letra de Microsoft Corporation. NO es de uso libre: su licencia no permite
+  redistribuirla desde un sitio web público. Está incluida solo porque se pidió para
+  uso personal. Si publicas la dirección de la app para otras personas, elimina los
+  archivos fonts/comic-*.woff y la entrada "comic" de la lista de letras.
