@@ -1,7 +1,7 @@
 /* Lector Nocturno: guarda la app para usarla sin internet.
    La primera vez que se abre hay que tener conexión; después funciona sin ella.
    Si cambias algo de la app, sube el número de VERSION para que los teléfonos se actualicen. */
-const VERSION = "v17";
+const VERSION = "v31";
 const CACHE = "lector-nocturno-" + VERSION;
 
 const LOCAL = [
