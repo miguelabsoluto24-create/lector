@@ -97,7 +97,15 @@
   .zoom-label {
     min-width: 3.2ch; text-align: center; color: var(--muted);
     font-size: 0.8rem; font-variant-numeric: tabular-nums;
+    background: transparent; border: 0; border-radius: 8px; padding: 10px 6px; min-height: 44px; cursor: pointer;
+    text-decoration: underline dotted; text-underline-offset: 3px; font-family: inherit;
   }
+  .top.no-zoom #zoomOut, .top.no-zoom #zoomIn, .top.no-zoom .zoom-label { display: none; }
+  .zoom-label:hover { background: color-mix(in srgb, var(--fg) 7%, transparent); }
+  .num-row { display: flex; align-items: center; gap: 8px; }
+  .num-row input { width: 5.5rem; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: transparent; color: var(--fg); font: inherit; font-size: 1rem; text-align: center; }
+  .num-row .ann-act { min-width: 44px; }
+  .num-row .unit { color: var(--muted); }
   .btn {
     display: inline-grid; place-items: center;
     width: 44px; height: 44px; border: 0; border-radius: 10px;
@@ -271,6 +279,7 @@
   .toc-item .tl { min-width: 0; overflow-wrap: anywhere; }
   .toc-item[data-d="0"] .tl { font-weight: 600; }
   .toc-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .toc-btns { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
   .toc-edit { padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--fg); font-weight: 600; font-size: 0.82rem; cursor: pointer; }
   .toc-edit[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); border-color: transparent; }
   .toc-q { width: 100%; padding: 10px 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; color: var(--fg); }
@@ -462,7 +471,7 @@
       <button class="btn" id="zoomOut" type="button" aria-label="Reducir" title="Reducir" disabled>
         <svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>
       </button>
-      <span class="zoom-label" id="zoomLabel" aria-live="polite"></span>
+      <button class="zoom-label" id="zoomLabel" type="button" aria-live="polite" aria-label="Zoom: toca para escribir un valor" title="Toca para escribir el zoom" aria-expanded="false" aria-controls="zoomPanel"></button>
       <button class="btn" id="zoomIn" type="button" aria-label="Ampliar" title="Ampliar" disabled>
         <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
       </button>
@@ -492,11 +501,7 @@
         <p>Abre un PDF o un EPUB. Queda guardado en tu biblioteca y la app recuerda en qué página ibas.</p>
         <button class="open-btn" id="openMain" type="button">
           <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-          Abrir PDF o EPUB
-        </button>
-        <button class="open-btn alt" id="openDirMain" type="button">
-          <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM12 10v5M9.5 12.5h5"/></svg>
-          Importar una carpeta
+          Abrir PDF, EPUB o carpeta
         </button>
         <p class="drop-hint">Los archivos se leen en tu teléfono. No se suben a ningún servidor.</p>
         <div class="recent" id="recent" hidden>
@@ -531,7 +536,6 @@
             </button>
           </div>
         </div>
-        <div class="dir-row" id="dirRow"><button class="open-btn small alt" id="openDirLib" type="button">Importar una carpeta del teléfono</button></div>
         <div class="folder-head" id="folderHead" hidden>
           <button class="btn" id="folderBack" type="button" aria-label="Volver a la biblioteca" title="Volver a la biblioteca"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
           <span class="fname" id="folderName"></span>
@@ -572,6 +576,19 @@
     </section>
     <div class="pdf-wrap" id="pdfWrap" hidden><div class="pdf-sheet" id="pdfSheet"><div class="pdf-box" id="pdfBox"><canvas id="pdfCanvas"></canvas></div></div><div class="pdf-pages" id="pdfPages" hidden></div></div>
     <div class="epub-wrap" id="epubWrap" hidden><div id="epubView"></div></div>
+    <div class="font-panel" id="zoomPanel" role="dialog" aria-label="Zoom" hidden>
+      <div class="fp-title">Zoom</div>
+      <div class="num-row">
+        <button class="ann-act" id="zmDown" type="button" aria-label="Reducir">−</button>
+        <input id="zmInput" type="number" inputmode="numeric" step="5" aria-label="Zoom en porcentaje">
+        <span class="unit">%</span>
+        <button class="ann-act" id="zmUp" type="button" aria-label="Ampliar">+</button>
+      </div>
+      <p class="fp-note" id="zmNote"></p>
+      <div class="nd-btns" style="justify-content:flex-start">
+        <button class="ann-act" id="zmReset" type="button">Volver a 100 %</button>
+      </div>
+    </div>
     <div class="font-panel" id="fontPanel" role="dialog" aria-label="Tipo de letra" hidden>
       <div class="fp-title">Tipo de letra</div>
       <div class="fp-list" id="fontList" role="radiogroup" aria-label="Tipo de letra"></div>
@@ -584,6 +601,17 @@
         </span>
         <span class="fp-track" aria-hidden="true"></span>
       </button>
+      <div class="fp-sep" id="fsSep" hidden></div>
+      <div id="fsBox" hidden>
+        <div class="fp-title">Tamaño de la letra</div>
+        <div class="num-row">
+          <button class="ann-act" id="fsDown" type="button" aria-label="Letra más pequeña">−</button>
+          <input id="fsInput" type="number" inputmode="numeric" step="5" aria-label="Tamaño de la letra en porcentaje">
+          <span class="unit">%</span>
+          <button class="ann-act" id="fsUp" type="button" aria-label="Letra más grande">+</button>
+        </div>
+        <p class="fp-note" id="fsNote"></p>
+      </div>
     </div>
     <div class="font-panel" id="themePanel" role="dialog" aria-label="Apariencia" hidden>
       <div class="fp-title">Modo</div>
@@ -597,7 +625,7 @@
       <p class="fp-note" id="palNote"></p>
     </div>
     <div class="font-panel toc-panel" id="tocPanel" role="dialog" aria-label="Capítulos" hidden>
-      <div class="toc-head"><div class="fp-title">Capítulos</div><button class="toc-edit" id="tocEditBtn" type="button" aria-pressed="false">Editar</button></div>
+      <div class="toc-head"><div class="fp-title">Capítulos</div><div class="toc-btns"><button class="toc-edit" id="tocFind" type="button" hidden>Buscar capítulos</button><button class="toc-edit" id="tocEditBtn" type="button" aria-pressed="false">Editar</button></div></div>
       <input id="tocQ" class="toc-q" type="search" placeholder="Buscar capítulo" aria-label="Buscar capítulo" autocomplete="off" hidden>
       <p class="fp-note" id="tocNote" hidden></p>
       <ul class="toc-list" id="tocList"></ul>
@@ -627,6 +655,18 @@
       <span id="hlSw" style="display:flex;gap:6px"></span>
       <button class="sb-txt" id="hlErase" type="button" aria-pressed="false">Borrar</button>
       <button class="sb-txt" id="hlDone" type="button">Listo</button>
+    </div>
+    <div class="note-dlg" id="addDlg" hidden>
+      <div class="nd-card" role="dialog" aria-modal="true" aria-label="Añadir libros">
+        <div class="fp-title">Añadir libros</div>
+        <div class="ann-actions">
+          <button class="ann-act primary" id="addFiles" type="button">Elegir documentos (PDF o EPUB)</button>
+          <button class="ann-act" id="addDir" type="button">Importar una carpeta</button>
+        </div>
+        <div class="nd-btns">
+          <button id="addClose" type="button">Cerrar</button>
+        </div>
+      </div>
     </div>
     <div class="note-dlg" id="howDlg" hidden>
       <div class="nd-card" role="dialog" aria-modal="true" aria-label="Traer una carpeta">
@@ -1446,7 +1486,6 @@
     visibleBooks = books;
     fillBooks($("libList"), books, { moveBtn: true, selecting: selecting });
     $("folderHead").hidden = !libFolder;
-    $("dirRow").hidden = !!libFolder;
     var cf = libFolder ? folderById(libFolder) : null;
     if (cf) $("folderName").textContent = cf.name;
     $("libTools").hidden = all.length < 1;
@@ -1730,7 +1769,7 @@
   $("tabHome").addEventListener("click", function () { setTab("home"); });
   $("tabLib").addEventListener("click", function () { if (homeTab === "lib") { libFolder = null; selKeys = {}; } setTab("lib"); });
   $("seeAll").addEventListener("click", function () { setTab("lib"); });
-  $("openLib").addEventListener("click", function () { pick(); });
+  $("openLib").addEventListener("click", function () { openAdd(); });
   $("libFilter").addEventListener("input", renderLibrary);
   $("sortRecent").addEventListener("click", function () { libSort = "recent"; store.set(LIBSORT, libSort); renderLibrary(); });
   $("sortAz").addEventListener("click", function () { libSort = "az"; store.set(LIBSORT, libSort); renderLibrary(); });
@@ -1844,6 +1883,7 @@
     showView("pdf");
     enterReading();
     $("zoomLabel").textContent = Math.round(cur.zoom * 100) + "%";
+    document.querySelector(".top").classList.remove("no-zoom");
     await renderPdf(true);
     if (!(opts && (opts.page || opts.quiet)) && saved.page && saved.page > 1) toast("Continúas en la página " + cur.page);
     setTimeout(function () { resolvePdfHl(); }, 300);
@@ -2073,8 +2113,9 @@
     var c = readerColors();
     cur.rendition.themes.override("color", c.fg, true);
     cur.rendition.themes.override("background", c.bg, true);
-    cur.rendition.themes.fontSize(cur.fs + "%");
+    cur.rendition.themes.fontSize(effFs() + "%");
   }
+  function effFs() { return cur.fs; }
 
   function updateEpubIndicator() {
     if (!cur || cur.type !== "epub") return;
@@ -2395,7 +2436,9 @@
     if (extra) { for (var xk in extra) cur[xk] = extra[xk]; }   // p. ej. un PDF leído como texto
     enterReading();
     $("bookTitle").textContent = name.replace(/\.(epub|pdf)$/i, "");
-    $("zoomLabel").textContent = cur.fs + "%";
+    $("zoomLabel").textContent = "";
+    document.querySelector(".top").classList.add("no-zoom");   // en EPUB y modo texto no hay zoom: solo el tamaño de letra
+    toggleZoomPanel(false);
     setIndicator(null, "calc", 0);
 
     try {
@@ -2523,8 +2566,9 @@
   function toggleFontPanel(show) {
     var p = $("fontPanel");
     var want = show === undefined ? p.hidden : !!show;
+    if (want) toggleZoomPanel(false);
     if (want === !p.hidden) return;
-    if (want) { toggleAnnPanel(false); toggleThemePanel(false); toggleTocPanel(false); }
+    if (want) { toggleAnnPanel(false); toggleThemePanel(false); toggleTocPanel(false); syncFsBox(); }
     p.hidden = !want;
     $("fontBtn").setAttribute("aria-expanded", want ? "true" : "false");
     if (want) {
@@ -3800,6 +3844,7 @@
     $("tocEditBar").hidden = !st.edit;
     $("tocReset").hidden = !st.custom;
     $("tocRescan").hidden = c.type !== "pdf";
+    $("tocFind").hidden = c.type !== "pdf" || (!st.list.length && !!st.canMake && !st.edit);
     $("tocAdd").textContent = "＋ Añadir capítulo aquí" + (c.type === "pdf" ? " (pág. " + c.page + ")" : "");
     $("tocQ").hidden = st.list.length < 6 && !q;
     var list = st.list;
@@ -3936,6 +3981,18 @@
     await tocScan();
     if (tocSt) { tocSt.edit = true; paintToc(); }
   });
+  $("tocFind").addEventListener("click", async function () {
+    if (!tocSt || tocSt.c.type !== "pdf" || tocScanning) return;
+    var b = $("tocFind");
+    if (tocSt.custom && !tocSt.armedFind) {
+      tocSt.armedFind = true; b.textContent = "¿Seguro? Se pierden tus cambios";
+      setTimeout(function () { if (tocSt) { tocSt.armedFind = false; b.textContent = "Buscar capítulos"; } }, 3500);
+      return;
+    }
+    try { localStorage.removeItem(TOCC + tocSt.key); localStorage.removeItem(TOCA + tocSt.key); } catch (e) {}
+    b.textContent = "Buscar capítulos";
+    await tocScan();
+  });
   $("tocQ").addEventListener("input", function () { if (tocSt) { tocSt.q = $("tocQ").value; paintToc(); } });
   document.addEventListener("click", function (e) {
     if (!$("tocPanel").hidden && !(e.target.closest && e.target.closest("#tocBtn"))) toggleTocPanel(false);
@@ -3957,19 +4014,79 @@
     }
   }
 
+  var ZLIM = { pdf: [60, 400] };
+  function zoomPct() { return Math.round(cur.zoom * 100); }
+  function setZoomPct(v) {
+    if (!cur || cur.type !== "pdf") return;
+    var lim = ZLIM.pdf, n = Math.round(Number(v));
+    if (!isFinite(n)) n = zoomPct();
+    n = clamp(n, lim[0], lim[1]);
+    cur.zoom = n / 100;
+    $("zoomLabel").textContent = n + "%";
+    renderPdf(false);
+    syncZoomPanel();
+  }
   function zoom(dir) {
     if (!cur) return;
     if (cur.type === "pdf") {
-      cur.zoom = clamp(Math.round(cur.zoom * (dir > 0 ? 1.2 : 1 / 1.2) * 100) / 100, 0.6, 4);
-      $("zoomLabel").textContent = Math.round(cur.zoom * 100) + "%";
-      renderPdf(false);
+      var z = clamp(Math.round(cur.zoom * (dir > 0 ? 1.2 : 1 / 1.2) * 100) / 100, 0.6, 4);
+      setZoomPct(Math.round(z * 100));
     } else {
-      cur.fs = clamp(cur.fs + dir * 10, 70, 240);
-      $("zoomLabel").textContent = cur.fs + "%";
-      cur.rendition.themes.fontSize(cur.fs + "%");
-      savePosition();
+      // por si se usa un atajo: en EPUB y modo texto cambia solo el tamaño de la letra
+      setFsPct(cur.fs + dir * 10);
     }
   }
+  function setFsPct(v) {
+    if (!cur || cur.type !== "epub") return;
+    var n = Math.round(Number(v));
+    if (!isFinite(n)) n = cur.fs;
+    cur.fs = clamp(n, 70, 240);
+    cur.rendition.themes.fontSize(effFs() + "%");
+    savePosition();
+    syncFsBox();
+  }
+  function syncFsBox() {
+    var on = !!cur && cur.type === "epub";
+    $("fsSep").hidden = !on; $("fsBox").hidden = !on;
+    if (!on) return;
+    $("fsInput").value = cur.fs;
+    $("fsNote").textContent = "Entre 70 % y 240 %.";
+  }
+  function syncZoomPanel() {
+    if (!cur) return;
+    syncFsBox();
+    if (cur.type !== "pdf") return;
+    var lim = ZLIM.pdf;
+    $("zmInput").min = lim[0]; $("zmInput").max = lim[1];
+    $("zmInput").value = zoomPct();
+    $("zmNote").textContent = "Entre " + lim[0] + " % y " + lim[1] + " %.";
+  }
+  function toggleZoomPanel(show) {
+    var p = $("zoomPanel");
+    var want = show === undefined ? p.hidden : !!show;
+    if (want === !p.hidden) return;
+    if (want) {
+      if (!cur || cur.type !== "pdf") return;
+      toggleFontPanel(false); toggleAnnPanel(false); toggleThemePanel(false); toggleTocPanel(false); hideSelBar();
+      p.hidden = false;
+      syncZoomPanel();
+      setTimeout(function () { try { $("zmInput").focus(); $("zmInput").select(); } catch (e) {} }, 30);
+    } else p.hidden = true;
+    $("zoomLabel").setAttribute("aria-expanded", want ? "true" : "false");
+  }
+  $("zoomLabel").addEventListener("click", function (e) { e.stopPropagation(); toggleZoomPanel(); });
+  $("zoomPanel").addEventListener("click", function (e) { e.stopPropagation(); });
+  $("zmInput").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); setZoomPct($("zmInput").value); } });
+  $("zmInput").addEventListener("change", function () { setZoomPct($("zmInput").value); });
+  $("zmDown").addEventListener("click", function () { if (cur) setZoomPct(zoomPct() - (cur.type === "pdf" ? 10 : 10)); });
+  $("zmUp").addEventListener("click", function () { if (cur) setZoomPct(zoomPct() + 10); });
+  $("zmReset").addEventListener("click", function () { setZoomPct(100); });
+  $("fsInput").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); setFsPct($("fsInput").value); } });
+  $("fsInput").addEventListener("change", function () { setFsPct($("fsInput").value); });
+  $("fsDown").addEventListener("click", function () { if (cur) setFsPct(cur.fs - 10); });
+  $("fsUp").addEventListener("click", function () { if (cur) setFsPct(cur.fs + 10); });
+  document.addEventListener("click", function () { toggleZoomPanel(false); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") toggleZoomPanel(false); });
 
   async function setMode(m) {
     if (m === mode) return;
@@ -4284,13 +4401,18 @@
     await importFiles(items);
     if (!cur && homeTab !== "lib") setTab("lib");
   });
-  $("openDirMain").addEventListener("click", pickFolder);
-  $("openDirLib").addEventListener("click", pickFolder);
+  function closeAdd() { $("addDlg").hidden = true; }
+  function openAdd() { $("addDlg").hidden = false; }
+  $("addClose").addEventListener("click", closeAdd);
+  $("addDlg").addEventListener("click", function (e) { if (e.target === $("addDlg")) closeAdd(); });
+  $("addFiles").addEventListener("click", function () { closeAdd(); pick(); });
+  $("addDir").addEventListener("click", function () { closeAdd(); pickFolder(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("addDlg").hidden) closeAdd(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("dirDlg").hidden) closeDirDlg(); });
 
   var fileInput = $("fileInput");
   function pick() { fileInput.value = ""; fileInput.click(); }
-  $("openMain").addEventListener("click", pick);
+  $("openMain").addEventListener("click", openAdd);
   fileInput.addEventListener("change", function () { handleFiles(fileInput.files); });
 
   var app = $("app");
